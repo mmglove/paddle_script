@@ -7,22 +7,6 @@ cd ${repo_path}
 # git repo
 #git clone https://github.com/PaddlePaddle/PaddleRec.git -b master
 pip install --upgrade pip
-################
-if [ -d "$PWD/logs" ];then
-    rm -rf $PWD/logs;
-fi
-mkdir $PWD/logs
-export all_log_path=$PWD/logs
-print_info(){
-if [ $1 -ne 0 ];then
-    mv ${log_path}/$2 ${log_path}/FAIL_$2.log
-    echo -e "\033[31m ${log_path}/FAIL_$2 \033[0m"
-else
-    mv ${log_path}/$2 ${log_path}/SUCCESS_$2.log
-    echo -e "\033[32m ${log_path}/SUCCESS_$2 \033[0m"
-fi
-}
-
 ###########
 demo13(){
 #必须先声明
@@ -33,26 +17,24 @@ dic=([dnn]='models/rank/dnn' [wide_deep]='models/rank/wide_deep' [deepfm]='model
 [tagspace]='models/contentunderstanding/tagspace' [textcnn]='models/contentunderstanding/textcnn')
 echo ${!dic[*]}   # 输出所有的key
 echo ${dic[*]}    # 输出所有的value
-i=1
 for model in $(echo ${!dic[*]});do
     model_path=${dic[$model]}
     echo ${model} : ${model_path}
     cd ${repo_path}/${model_path}
     # dygraph
-    python -u ../../../tools/trainer.py -m config.yaml > ${log_path}/${i}_demo_${model}_dy_train 2>&1
-    print_info $? ${i}_demo_${model}_dy_train
-    python -u ../../../tools/infer.py -m config.yaml > ${log_path}/${i}_demo_${model}_dy_infer 2>&1
-    print_info $? ${i}_demo_${model}_dy_infer
+    echo -e "\033[31m start dy train ${model}  \033[0m"
+    python -u ../../../tools/trainer.py -m config.yaml
+    echo -e "\033[31m start dy infer ${model}  \033[0m"
+    python -u ../../../tools/infer.py -m config.yaml
     mv output_model_${model} output_model_${model}_dy
 
     # static
-    python -u ../../../tools/static_trainer.py -m config.yaml > ${log_path}/${i}_demo_${model}_st_train 2>&1
-    print_info $? ${i}_demo_${model}_st_train
+    echo -e "\033[31m start st train ${model}  \033[0m"
+    python -u ../../../tools/static_trainer.py -m config.yaml
     # 静态图预测
-    python -u ../../../tools/static_infer.py -m config.yaml > ${log_path}/${i}_demo_${model}_st_infer 2>&1
-    print_info $? ${i}_demo_${model}_st_infer
+    echo -e "\033[31m start st infer ${model}  \033[0m"
+    python -u ../../../tools/static_infer.py -m config.yaml
     mv output_model_${model} output_model_${model}_st
-    let i+=1
 done
 }
 
@@ -65,18 +47,14 @@ model=all_word2vec
 yaml_mode=config_bigdata
 fi
 # dygraph
-python -u ../../../tools/trainer.py -m ${yaml_mode}.yaml > ${log_path}/${model}_dy_train 2>&1
-print_info $? ${model}_dy_train
-python -u infer.py -m ${yaml_mode}.yaml > ${log_path}/${model}_dy_infer 2>&1
-print_info $? ${model}_dy_infer
+python -u ../../../tools/trainer.py -m ${yaml_mode}.yaml
+python -u infer.py -m ${yaml_mode}.yaml
 mv output_model_${model} output_model_${model}_dy
 
 # 静态图训练
-python -u ../../../tools/static_trainer.py -m ${yaml_mode}.yaml > ${log_path}/${model}_st_train 2>&1
-print_info $? ${model}_st_train
+python -u ../../../tools/static_trainer.py -m ${yaml_mode}.yaml
 # 静态图预测
-python -u static_infer.py -m ${yaml_mode}.yaml >${log_path}/${model}_st_infer 2>&1
-print_info $? ${model}_st_infer
+python -u static_infer.py -m ${yaml_mode}.yaml
 mv output_model_${model} output_model_${model}_st
 
 }
@@ -88,43 +66,31 @@ pip install py27hash
 bash data_prepare.sh
 model=demo_movie_recommand_rank
 # 动态图训练
-python -u ../../../tools/trainer.py -m rank/config.yaml > ${log_path}/${model}_dy_train 2>&1
-print_info $? ${model}_dy_train
+python -u ../../../tools/trainer.py -m rank/config.yaml
 # 动态图预测
-python -u infer.py -m rank/config.yaml > ${log_path}/${model}_dy_infer 2>&1
-print_info $? ${model}_dy_infe
+python -u infer.py -m rank/config.yaml
 # rank模型的测试结果解析
-python parse.py rank_offline rank_infer_result >${log_path}/${model}_dy_parse 2>&1
-print_info $? ${model}_dy_parse
+python parse.py rank_offline rank_infer_result
 # 静态图训练
-python -u ../../../tools/static_trainer.py -m rank/config.yaml > ${log_path}/${model}_st_train  2>&1
-print_info $? ${model}_st_train
+python -u ../../../tools/static_trainer.py -m rank/config.yaml
 # 静态图预测
-python -u static_infer.py -m rank/config.yaml >${log_path}/${model}_st_infer 2>&1
-print_info $? ${model}_st_infer
+python -u static_infer.py -m rank/config.yaml
 # recall模型的测试结果解析
-python parse.py recall_offline recall_infer_result >${log_path}/${model}_st_parse 2>&1
-print_info $? ${model}_st_parse
+python parse.py recall_offline recall_infer_result
 
 model=demo_movie_recommand_recall
 # 动态图训练
-python -u ../../../tools/trainer.py -m recall/config.yaml > ${log_path}/${model}_dy_train 2>&1
-print_info $? ${model}_dy_train
+python -u ../../../tools/trainer.py -m recall/config.yaml
 # 动态图预测
-python -u infer.py -m recall/config.yaml > ${log_path}/${model}_dy_infer 2>&1
-print_info $? ${model}_dy_infe
+python -u infer.py -m recall/config.yaml
 # rank模型的测试结果解析
-python parse.py rank_offline rank_infer_result >${log_path}/${model}_dy_parse 2>&1
-print_info $? ${model}_dy_parse
+python parse.py rank_offline rank_infer_result
 # 静态图训练
-python -u ../../../tools/static_trainer.py -m recall/config.yaml > ${log_path}/${model}_st_train  2>&1
-print_info $? ${model}_st_train
+python -u ../../../tools/static_trainer.py -m recall/config.yaml
 # 静态图预测
-python -u static_infer.py -m recall/config.yaml >${log_path}/${model}_st_infer 2>&1
-print_info $? ${model}_st_infer
+python -u static_infer.py -m recall/config.yaml
 # recall模型的测试结果解析
-python parse.py recall_offline recall_infer_result >${log_path}/${model}_st_parse 2>&1
-print_info $? ${model}_st_parse
+python parse.py recall_offline recall_infer_result
 }
 
 ################################################
