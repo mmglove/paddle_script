@@ -57,3 +57,5 @@ build)
   cd ../..
   ;;
 esac
+
+bash run_demo.sh run_demo
