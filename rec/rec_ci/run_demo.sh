@@ -6,7 +6,8 @@ export repo_path=$PWD
 cd ${repo_path}
 # git repo
 #git clone https://github.com/PaddlePaddle/PaddleRec.git -b master
-pip install --upgrade pip
+python -m pip install --upgrade pip
+python -m pip list
 ###########
 demo13(){
 #必须先声明
@@ -17,12 +18,14 @@ dic=([dnn]='models/rank/dnn' [wide_deep]='models/rank/wide_deep' [deepfm]='model
 [tagspace]='models/contentunderstanding/tagspace' [textcnn]='models/contentunderstanding/textcnn')
 echo ${!dic[*]}   # 输出所有的key
 echo ${dic[*]}    # 输出所有的value
+i=1
 for model in $(echo ${!dic[*]});do
     model_path=${dic[$model]}
     echo ${model} : ${model_path}
     cd ${repo_path}/${model_path}
+    echo -e "\033[31m $PWD  \033[0m"
     # dygraph
-    echo -e "\033[31m start dy train ${model}  \033[0m"
+    echo -e "\033[31m start dy train ${i} ${model}  \033[0m"
     python -u ../../../tools/trainer.py -m config.yaml
     echo -e "\033[31m start dy infer ${model}  \033[0m"
     python -u ../../../tools/infer.py -m config.yaml
@@ -35,11 +38,13 @@ for model in $(echo ${!dic[*]});do
     echo -e "\033[31m start st infer ${model}  \033[0m"
     python -u ../../../tools/static_infer.py -m config.yaml
     mv output_model_${model} output_model_${model}_st
+    let i+=1
 done
 }
 
 word2vec(){
 cd ${repo_path}/models/recall/word2vec
+echo -e "\033[31m $PWD  \033[0m"
 model=demo_word2vec
 yaml_mode=config
 if [[ "$1" =~ "con" ]]; then
@@ -178,12 +183,3 @@ word2vec con
 
 
 $1
-$2
-
-cd ${log_path}
-FF=`ls *FAIL_*|wc -l`
-if [ "${FF}" -gt "0" ];then
-    exit 1
-else
-    exit 0
-fi
