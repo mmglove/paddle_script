@@ -66,9 +66,13 @@ mv output_model_${model} output_model_${model}_st
 
 demo_movie_recommand(){
 cd ${repo_path}/models/demo/movie_recommand
+echo -e "\033[31m $PWD  \033[0m"
+if [[ "$1" =~ "con" ]]; then
 # download
 pip install py27hash
 bash data_prepare.sh
+fi
+
 model=demo_movie_recommand_rank
 # 动态图训练
 python -u ../../../tools/trainer.py -m rank/config.yaml
@@ -176,6 +180,7 @@ ln -s ${all_data}/datasets ${repo_path}/datasets
 # rank
 con13
 word2vec con
+demo_movie_recommand con
 }
 ################################################
 #run_demo
