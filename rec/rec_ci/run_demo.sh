@@ -8,10 +8,10 @@ cd ${repo_path}
 #git clone https://github.com/PaddlePaddle/PaddleRec.git -b master
 python -m pip install --upgrade pip
 python -m pip list
-export exit_glag=True
+export exit_glag=0
 print_info(){
 if [ $1 -ne 0 ];then
-    exit_glag=False
+    exit_glag=1
     echo -e "\033[31m FAIL_$2 \033[0m"
     echo -e "\033[31m FAIL_$2 \033[0m"  >>${repo_path}/result.log
 else
@@ -43,6 +43,7 @@ for model in $(echo ${!dic[*]});do
     echo -e "\033[31m start dy infer ${model}  \033[0m"
     python -u ../../../tools/infer.py -m config.yaml
     print_info $? ${model}_dy_infer
+    rm -rf output_model_*
 
     # static
     echo -e "\033[31m start st train ${model}  \033[0m"
@@ -70,6 +71,7 @@ echo -e "\033[31m start dy train 14 ${model} \n \033[0m "
 python -u ../../../tools/trainer.py -m ${yaml_mode}.yaml
 echo -e "\033[31m start dy infer 14 ${model} \n \033[0m "
 python -u infer.py -m ${yaml_mode}.yaml
+rm -rf output_model_*
 
 # 静态图训练
 echo -e "\033[31m start st train 14 ${model} \n \033[0m "
@@ -77,6 +79,7 @@ python -u ../../../tools/static_trainer.py -m ${yaml_mode}.yaml
 # 静态图预测
 echo -e "\033[31m start st infer 14 ${model} \n \033[0m "
 python -u static_infer.py -m ${yaml_mode}.yaml
+
 }
 
 con_movie_recommand(){
