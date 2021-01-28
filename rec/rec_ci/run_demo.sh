@@ -58,7 +58,7 @@ done
 
 word2vec(){
 cd ${repo_path}/models/recall/word2vec
-echo -e "\033[31m $PWD  \033[0m"
+echo -e "\033[31m -------------$PWD-------------  \033[0m"
 model=demo_word2vec
 yaml_mode=config
 if [[ "$1" =~ "con" ]]; then
@@ -66,12 +66,16 @@ model=all_word2vec
 yaml_mode=config_bigdata
 fi
 # dygraph
+echo -e "\033[31m start dy train 14 ${model} \n \033[0m "
 python -u ../../../tools/trainer.py -m ${yaml_mode}.yaml
+echo -e "\033[31m start dy infer 14 ${model} \n \033[0m "
 python -u infer.py -m ${yaml_mode}.yaml
 
 # 静态图训练
+echo -e "\033[31m start st train 14 ${model} \n \033[0m "
 python -u ../../../tools/static_trainer.py -m ${yaml_mode}.yaml
 # 静态图预测
+echo -e "\033[31m start st infer 14 ${model} \n \033[0m "
 python -u static_infer.py -m ${yaml_mode}.yaml
 }
 
