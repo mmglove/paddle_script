@@ -65,7 +65,7 @@ mv output_model_${model} output_model_${model}_st
 }
 
 demo_movie_recommand(){
-cd ${repo_path}/models/movie_recommand
+cd ${repo_path}/models/demo/movie_recommand
 # download
 pip install py27hash
 bash data_prepare.sh
