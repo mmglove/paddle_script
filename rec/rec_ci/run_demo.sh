@@ -8,6 +8,18 @@ cd ${repo_path}
 #git clone https://github.com/PaddlePaddle/PaddleRec.git -b master
 python -m pip install --upgrade pip
 python -m pip list
+export exit_glag=True
+print_info(){
+if [ $1 -ne 0 ];then
+    exit_glag=False
+    echo -e "\033[31m FAIL_$2 \033[0m"
+    echo -e "\033[31m FAIL_$2 \033[0m"  >>${repo_path}/result.log
+else
+    echo -e "\033[32m SUCCESS_$2 \033[0m"
+    echo -e "\033[32m SUCCESS_$2 \033[0m"  >>${repo_path}/result.log
+fi
+}
+
 ###########
 demo13(){
 #必须先声明
@@ -23,19 +35,23 @@ for model in $(echo ${!dic[*]});do
     model_path=${dic[$model]}
     echo ${model} : ${model_path}
     cd ${repo_path}/${model_path}
-    echo -e "\033[31m $PWD  \033[0m"
+    echo -e "\033[31m -------------$PWD---------------\n  \033[0m"
     # dygraph
-    echo -e "\033[31m start dy train ${i} ${model}  \033[0m"
+    echo -e "\033[31m start dy train ${i} ${model}  \033[0m "
     python -u ../../../tools/trainer.py -m config.yaml
+    print_info $? ${model}_dy_train
     echo -e "\033[31m start dy infer ${model}  \033[0m"
     python -u ../../../tools/infer.py -m config.yaml
+    print_info $? ${model}_dy_infer
 
     # static
     echo -e "\033[31m start st train ${model}  \033[0m"
     python -u ../../../tools/static_trainer.py -m config.yaml
+    print_info $? ${model}_st_train
     # 静态图预测
     echo -e "\033[31m start st infer ${model}  \033[0m"
     python -u ../../../tools/static_infer.py -m config.yaml
+    print_info $? ${model}_st_infer
     let i+=1
 done
 }
@@ -179,4 +195,7 @@ con_movie_recommand
 #run_con
 
 
-$1
+$1 || True
+echo -e "\033[31m -------------result:-------------  \033[0m"
+cat ${repo_path}/result.log
+exit ${exit_glag}
