@@ -29,7 +29,6 @@ for model in $(echo ${!dic[*]});do
     python -u ../../../tools/trainer.py -m config.yaml
     echo -e "\033[31m start dy infer ${model}  \033[0m"
     python -u ../../../tools/infer.py -m config.yaml
-    mv output_model_${model} output_model_${model}_dy
 
     # static
     echo -e "\033[31m start st train ${model}  \033[0m"
@@ -37,7 +36,6 @@ for model in $(echo ${!dic[*]});do
     # 静态图预测
     echo -e "\033[31m start st infer ${model}  \033[0m"
     python -u ../../../tools/static_infer.py -m config.yaml
-    mv output_model_${model} output_model_${model}_st
     let i+=1
 done
 }
@@ -54,14 +52,11 @@ fi
 # dygraph
 python -u ../../../tools/trainer.py -m ${yaml_mode}.yaml
 python -u infer.py -m ${yaml_mode}.yaml
-mv output_model_${model} output_model_${model}_dy
 
 # 静态图训练
 python -u ../../../tools/static_trainer.py -m ${yaml_mode}.yaml
 # 静态图预测
 python -u static_infer.py -m ${yaml_mode}.yaml
-mv output_model_${model} output_model_${model}_st
-
 }
 
 con_movie_recommand(){
