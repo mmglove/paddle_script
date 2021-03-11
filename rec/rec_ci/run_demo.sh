@@ -1,17 +1,17 @@
 #!/bin/bash
 ####################################
 #export CUDA_VISIBLE_DEVICES=2
+export all_data=/paddle/all_data/rec
 #运行目录 PaddleRec/
 export repo_path=$PWD
 cd ${repo_path}
 # git repo
 #git clone https://github.com/PaddlePaddle/PaddleRec.git -b master
-python -m pip install --upgrade pip
 python -m pip list
-export exit_glag=0
+export exit_flag=0
 print_info(){
 if [ $1 -ne 0 ];then
-    exit_glag=1
+    exit_flag=1
     echo -e "\033[31m FAIL_$2 \033[0m"
     echo -e "\033[31m FAIL_$2 \033[0m"  >>${repo_path}/result.log
 else
@@ -156,7 +156,7 @@ print_info $? con_$1_infer
 con13(){
 #必须先声明
 declare -A dic
-dic=([dnn]='models/rank/dnn' [wide_deep]='models/rank/wide_deep' [deepfm]='models/rank/deepfm' [fm]='models/rank/fm' [gateDnn]='models/rank/gateDnn' [logistic_regression]='models/rank/logistic_regression' \
+dic=([dnn]='models/rank/dnn' [wide_deep]='models/rank/wide_deep' [deepfm]='models/rank/deepfm' [fm]='models/rank/fm' [gateDnn]='models/rank/gateDnn' [logistic_regression]='models/rank/logistic_regression' [naml]='models/rank/naml' \
 [esmm]='models/multitask/esmm' [mmoe]='models/multitask/mmoe' \
 [dssm]='models/match/dssm' [match-pyramid]='models/match/match-pyramid' [multiview-simnet]='models/match/multiview-simnet' \
 [tagspace]='models/contentunderstanding/tagspace' [textcnn]='models/contentunderstanding/textcnn')
@@ -167,25 +167,26 @@ for model in $(echo ${!dic[*]});do
     model_path=${dic[$model]}
     echo ${model} : ${model_path}
     cd ${repo_path}/${model_path}
-#    con_dy_train_infer ${i}_rank_${model}_dy
-#    mv output_model_all_${model} output_model_all_${model}_dy
+    con_dy_train_infer ${i}_rank_${model}_dy
+    mv output_model_all_${model} output_model_all_${model}_dy
 
-    con_st_train_infer ${i}_rank_${model}_st
-    mv output_model_all_${model} output_model_all_${model}_st
+#    con_st_train_infer ${i}_rank_${model}_st
+#    mv output_model_all_${model} output_model_all_${model}_st
     let i+=1
 done
 }
 ################################################
 run_demo(){
-mkdir ${all_log_path}/demo_log
-export log_path=${all_log_path}/demo_log
+mkdir ${repo_path}/demo_log
+export log_path=${repo_path}/demo_log
 demo13
 word2vec
 }
 ################################################
 run_con(){
-mkdir ${all_log_path}/con_log
-export log_path=${all_log_path}/con_log
+cd ${repo_path}
+mkdir ${repo_path}/con_log
+export log_path=${repo_path}/con_log
 if [ ! -d "${all_data}/datasets" ];then
     download_all_data
 fi
@@ -194,8 +195,8 @@ ln -s ${all_data}/datasets ${repo_path}/datasets
 
 # rank
 con13
-word2vec con
 con_movie_recommand
+word2vec con
 }
 ################################################
 #run_demo
@@ -205,4 +206,4 @@ con_movie_recommand
 $1 || True
 echo -e "\033[31m -------------result:-------------  \033[0m"
 cat ${repo_path}/result.log
-exit ${exit_glag}
+exit ${exit_flag}

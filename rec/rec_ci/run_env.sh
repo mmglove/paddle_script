@@ -24,7 +24,7 @@ echo "python="$1
 ####################################
 # for paddle env
 set -x
-python -m pip install --upgrade pip
+python -m pip install pip==20.2.4
 paddle=$2
 version=${paddle%_*}
 version_num=${paddle#*_}
@@ -38,7 +38,7 @@ release)
 develop)
   unset http_proxy
   unset https_proxy
-  python -m pip install -U https://paddle-wheel.bj.bcebos.com/develop-gpu-cuda10-cudnn7-mkl/paddlepaddle_gpu-2.1.0_dev0.post100-cp37-cp37m-linux_x86_64.whl
+  python -m pip install --pre paddlepaddle-gpu==2.1.0.dev0.post101 -f https://paddlepaddle.org.cn/whl/cu101/mkl/develop.html
   export http_proxy=$3;
   export https_proxy=$3;
   ;;
