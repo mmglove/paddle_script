@@ -127,13 +127,14 @@ python parse.py recall_offline recall_infer_result
 
 dnn_all(){
     cd ${repo_path}/models/rank/dnn
+    model=demo_dnn_all
     # dy_gpu1
     sed -i "s/  use_gpu: False/  use_gpu: True/g" config.yaml
     echo -e "\033[31m start _dy_train_gpu1 dnn_all \033[0m "
-    python -u ../../../tools/trainer.py -m config_bigdata.yaml
+    python -u ../../../tools/trainer.py -m config.yaml
     print_info $? ${model}_dy_train_gpu1
     echo -e "\033[31m start _dy_infer_gpu1 dnn_all \033[0m "
-    python -u ../../../tools/infer.py -m config_bigdata.yaml
+    python -u ../../../tools/infer.py -m config.yaml
     print_info $? ${model}_dy_infer_gpu1
     rm -rf output
     # dy_gpu2
@@ -149,10 +150,10 @@ dnn_all(){
 
     # st_gpu1
     echo -e "\033[31m start _st_train_gpu1 dnn_all \033[0m "
-    python -u ../../../tools/static_trainer.py -m config_bigdata.yaml
+    python -u ../../../tools/static_trainer.py -m config.yaml
     print_info $? ${model}_st_train_gpu1
     echo -e "\033[31m start _st_infer_gpu1 dnn_all \033[0m "
-    python -u ../../../tools/static_infer.py -m config_bigdata.yaml
+    python -u ../../../tools/static_infer.py -m config.yaml
     print_info $? ${model}_st_infer_gpu1
     rm -rf output
     # st_gpu2
