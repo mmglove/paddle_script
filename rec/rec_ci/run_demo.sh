@@ -24,10 +24,12 @@ fi
 demo15(){
 #必须先声明
 declare -A dic
-dic=([dnn]='models/rank/dnn' [wide_deep]='models/rank/wide_deep' [deepfm]='models/rank/deepfm' [fm]='models/rank/fm' [gateDnn]='models/rank/gateDnn' [logistic_regression]='models/rank/logistic_regression' [naml]='models/rank/naml' [ffm]='models/rank/ffm' \
+dic=([dnn]='models/rank/dnn' [wide_deep]='models/rank/wide_deep' [deepfm]='models/rank/deepfm' [fm]='models/rank/fm' [gateDnn]='models/rank/gateDnn' \
+[logistic_regression]='models/rank/logistic_regression' [naml]='models/rank/naml' [ffm]='models/rank/ffm' \
 [esmm]='models/multitask/esmm' [mmoe]='models/multitask/mmoe' \
 [dssm]='models/match/dssm' [match-pyramid]='models/match/match-pyramid' [multiview-simnet]='models/match/multiview-simnet' \
-[tagspace]='models/contentunderstanding/tagspace' [textcnn]='models/contentunderstanding/textcnn')
+[tagspace]='models/contentunderstanding/tagspace' [textcnn]='models/contentunderstanding/textcnn' \
+[ncf]='models/recall/ncf')
 echo ${!dic[*]}   # 输出所有的key
 echo ${dic[*]}    # 输出所有的value
 i=1
