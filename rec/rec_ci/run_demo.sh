@@ -21,10 +21,10 @@ fi
 }
 
 ###########
-demo13(){
+demo15(){
 #必须先声明
 declare -A dic
-dic=([dnn]='models/rank/dnn' [wide_deep]='models/rank/wide_deep' [deepfm]='models/rank/deepfm' [fm]='models/rank/fm' [gateDnn]='models/rank/gateDnn' [logistic_regression]='models/rank/logistic_regression' \
+dic=([dnn]='models/rank/dnn' [wide_deep]='models/rank/wide_deep' [deepfm]='models/rank/deepfm' [fm]='models/rank/fm' [gateDnn]='models/rank/gateDnn' [logistic_regression]='models/rank/logistic_regression' [naml]='models/rank/naml' [ffm]='models/rank/ffm' \
 [esmm]='models/multitask/esmm' [mmoe]='models/multitask/mmoe' \
 [dssm]='models/match/dssm' [match-pyramid]='models/match/match-pyramid' [multiview-simnet]='models/match/multiview-simnet' \
 [tagspace]='models/contentunderstanding/tagspace' [textcnn]='models/contentunderstanding/textcnn')
@@ -39,20 +39,20 @@ for model in $(echo ${!dic[*]});do
     # dygraph
     echo -e "\033[31m start dy train ${i} ${model}  \033[0m "
     python -u ../../../tools/trainer.py -m config.yaml
-    print_info $? ${model}_dy_train
+    print_info $? ${i}_${model}_dy_train
     echo -e "\033[31m start dy infer ${model}  \033[0m"
     python -u ../../../tools/infer.py -m config.yaml
-    print_info $? ${model}_dy_infer
+    print_info $? ${i}_${model}_dy_infer
     rm -rf output_model_*
 
     # static
     echo -e "\033[31m start st train ${model}  \033[0m"
     python -u ../../../tools/static_trainer.py -m config.yaml
-    print_info $? ${model}_st_train
+    print_info $? ${i}_${model}_st_train
     # 静态图预测
     echo -e "\033[31m start st infer ${model}  \033[0m"
     python -u ../../../tools/static_infer.py -m config.yaml
-    print_info $? ${model}_st_infer
+    print_info $? ${i}_${model}_st_infer
     let i+=1
 done
 }
@@ -67,18 +67,25 @@ model=all_word2vec
 yaml_mode=config_bigdata
 fi
 # dygraph
-echo -e "\033[31m start dy train 14 ${model} \n \033[0m "
+echo -e "\033[31m start dy train 16 ${model} \n \033[0m "
 python -u ../../../tools/trainer.py -m ${yaml_mode}.yaml
-echo -e "\033[31m start dy infer 14 ${model} \n \033[0m "
+print_info $? ${model}_dy_train
+
+echo -e "\033[31m start dy infer 16 ${model} \n \033[0m "
 python -u infer.py -m ${yaml_mode}.yaml
+print_info $? ${model}_dy_infer
+
 rm -rf output_model_*
 
 # 静态图训练
-echo -e "\033[31m start st train 14 ${model} \n \033[0m "
+echo -e "\033[31m start st train 16 ${model} \n \033[0m "
 python -u ../../../tools/static_trainer.py -m ${yaml_mode}.yaml
+print_info $? ${model}_st_train
+
 # 静态图预测
-echo -e "\033[31m start st infer 14 ${model} \n \033[0m "
+echo -e "\033[31m start st infer 16 ${model} \n \033[0m "
 python -u static_infer.py -m ${yaml_mode}.yaml
+print_info $? ${model}_st_infer
 
 }
 
@@ -118,6 +125,47 @@ python -u static_infer.py -m recall/config.yaml
 python parse.py recall_offline recall_infer_result
 }
 
+dnn_all(){
+    cd ${repo_path}/models/rank/dnn
+    # dy_gpu1
+    sed -i "s/  use_gpu: False/  use_gpu: True/g" config.yaml
+    echo -e "\033[31m start _dy_train_gpu1 dnn_all \033[0m "
+    python -u ../../../tools/trainer.py -m config_bigdata.yaml
+    print_info $? ${model}_dy_train_gpu1
+    echo -e "\033[31m start _dy_infer_gpu1 dnn_all \033[0m "
+    python -u ../../../tools/infer.py -m config_bigdata.yaml
+    print_info $? ${model}_dy_infer_gpu1
+    rm -rf output
+    # dy_gpu2
+    echo -e "\033[31m start _dy_train_gpu2 dnn_all \033[0m "
+    python -m paddle.distributed.launch ../../../tools/trainer.py -m config.yaml
+    print_info $? ${model}_dy_train_gpu2
+    mv log ${model}_dy_train_gpu2_dist_logs
+    echo -e "\033[31m start _dy_infer_gpu2 dnn_all \033[0m "
+    python -m paddle.distributed.launch ../../../tools/infer.py -m config.yaml
+    print_info $? ${model}_dy_infer_gpu2
+    mv log ${model}_dy_infer_gpu2_dist_logs
+    rm -rf output
+
+    # st_gpu1
+    echo -e "\033[31m start _st_train_gpu1 dnn_all \033[0m "
+    python -u ../../../tools/static_trainer.py -m config_bigdata.yaml
+    print_info $? ${model}_st_train_gpu1
+    echo -e "\033[31m start _st_infer_gpu1 dnn_all \033[0m "
+    python -u ../../../tools/static_infer.py -m config_bigdata.yaml
+    print_info $? ${model}_st_infer_gpu1
+    rm -rf output
+    # st_gpu2
+    echo -e "\033[31m start _st_train_gpu2 dnn_all \033[0m "
+    python -m paddle.distributed.launch ../../../tools/static_trainer.py -m config.yaml
+    print_info $? ${model}_st_train_gpu2
+    mv log ${model}_st_train_gpu2_dist_logs
+    echo -e "\033[31m start _st_infer_gpu2 dnn_all \033[0m "
+    python -m paddle.distributed.launch ../../../tools/static_infer.py -m config.yaml
+    print_info $? ${model}_st_infer_gpu2
+    mv log ${model}_st_infer_gpu2_dist_logs
+
+}
 ################################################
 
 download_all_data(){
@@ -153,10 +201,10 @@ print_info $? con_$1_train
 python -u ../../../tools/static_infer.py -m config_bigdata.yaml > ${log_path}/con_$1_infer 2>&1
 print_info $? con_$1_infer
 }
-con13(){
+con15(){
 #必须先声明
 declare -A dic
-dic=([dnn]='models/rank/dnn' [wide_deep]='models/rank/wide_deep' [deepfm]='models/rank/deepfm' [fm]='models/rank/fm' [gateDnn]='models/rank/gateDnn' [logistic_regression]='models/rank/logistic_regression' [naml]='models/rank/naml' \
+dic=([dnn]='models/rank/dnn' [wide_deep]='models/rank/wide_deep' [deepfm]='models/rank/deepfm' [fm]='models/rank/fm' [gateDnn]='models/rank/gateDnn' [logistic_regression]='models/rank/logistic_regression' [naml]='models/rank/naml' [ffm]='models/rank/ffm' \
 [esmm]='models/multitask/esmm' [mmoe]='models/multitask/mmoe' \
 [dssm]='models/match/dssm' [match-pyramid]='models/match/match-pyramid' [multiview-simnet]='models/match/multiview-simnet' \
 [tagspace]='models/contentunderstanding/tagspace' [textcnn]='models/contentunderstanding/textcnn')
@@ -179,8 +227,9 @@ done
 run_demo(){
 mkdir ${repo_path}/demo_log
 export log_path=${repo_path}/demo_log
-demo13
+demo15
 word2vec
+dnn_all
 }
 ################################################
 run_con(){
@@ -194,7 +243,7 @@ mv ${repo_path}/datasets ${repo_path}/datasets_bk
 ln -s ${all_data}/datasets ${repo_path}/datasets
 
 # rank
-con13
+con15
 con_movie_recommand
 word2vec con
 }
@@ -202,7 +251,7 @@ word2vec con
 #run_demo
 #run_con
 
-
+################################################
 $1 || True
 echo -e "\033[31m -------------result:-------------  \033[0m"
 cat ${repo_path}/result.log
